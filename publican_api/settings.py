@@ -14,7 +14,7 @@ API_VERSION = api.__api_app_version__
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '(a-b^q1vfi$6+t5=zqv+5n5ibj0(8+$$a*8%^gptq^!)se0+68'
+SECRET_KEY = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
