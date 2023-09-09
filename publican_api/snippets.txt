@@ -1,0 +1,66 @@
+from django.contrib.auth.models import User
+from publican_api.models import Beer, Wine, Liquor
+pk=1
+b1 = Beer.objects.create(name='Sam Adams', ibu=60, calories=200, abv=55)
+w1 = Wine.objects.create(name='Toad Hollow', sweetness=500, acidity=0.65, tannin='L', fruit='Fruity')
+l1 = Liquor.objects.create(name='Ardbeg', abv=40, calories=70)
+u1 = User.objects.create(username='dave', email='dave@cox.com', password='drowssap')
+b1.favorite_of=u1
+b1.save
+queryset = {'beer':Beer.objects.filter(pk=pk), 'wine':Wine.objects.filter(pk=pk), 'liquor':Liquor.objects.filter(pk=pk)}
+item = queryset['beer'][0]
+
+
+
+from django.db import models
+from django.db.models.fields.related import ForeignKey
+import publican_api.utils as api_utils
+
+_models = models.get_models(include_auto_created=True)
+for _model in _models:
+  for f in _model._meta.fields:
+    if ("_favorite_of" in _model.__name__) and isinstance(f, ForeignKey) and (f.rel.to == User):
+      print(_model.__name__)
+
+
+
+_models = models.get_models(include_auto_created=True)
+for _model in _models:
+  for f in _model._meta.fields:
+    if ("_favorite_of" in _model.__name__) and isinstance(f, ForeignKey):
+      print(_model.__name__)
+
+
+
+###FINAL CODE##########################################################################################
+_app_models = [_model.__name__.replace('_favorite_of', '') for _model in models.get_models(include_auto_created=True) if 'favorite_of' in _model.__name__ and _model._meta.app_label == api_utils.get_app_label()]
+
+_results = []
+for _app_model in _app_models:
+   _results += models.get_model('publican_api', model_name=_app_model).objects.filter(favorite_of=_user)
+########################################################################################################
+
+
+
+#
+# LESS-TO-MORE-RESTRICTIVE - (0.26288512349128723 - 0.36418071389198303)
+#
+timeit.timeit("_app_models = [_model.__name__.replace('_favorite_of', '') for _model in models.get_models(include_auto_created=True) if _model._meta.app_label == api_utils.get_app_label() and 'favorite_of' in _model.__name__]", setup="from django.db import models;from django.db.models.fields.related import ForeignKey;import publican_api.utils as api_utils", number = 10000)
+
+
+#
+# MORE-TO-LESS-RESTRICTIVE - (0.12751777842640877 - 0.2877192273736)
+#
+timeit.timeit("_app_models = [_model.__name__.replace('_favorite_of', '') for _model in models.get_models(include_auto_created=True) if 'favorite_of' in _model.__name__ and _model._meta.app_label == api_utils.get_app_label()]", setup="from django.db import models;from django.db.models.fields.related import ForeignKey;import publican_api.utils as api_utils", number = 10000)
+
+
+_models = models.get_models(include_auto_created=True)
+_app_label = api_utils.get_app_label()
+_app_models =[]
+for _model in _models:
+  if ('favorite_of' in _model.__name__) and (_model._meta.app_label == _app_label ):
+    _model_name = _model.__name__.replace('_favorite_of', '')
+    _app_models.append(_model_name )
+
+
+timeit.timeit('_models = models.get_models(include_auto_created=True)' '_app_label = api_utils.get_app_label()' '_app_models =[]' 'for _model in _models:' '  if ("favorite_of" in _model.__name__) and (_model._meta.app_label == _app_label ):' '    _model_name = _model.__name__.replace("_favorite_of", "")' '    _app_models.append(_model_name )', setup="from django.db import models;from django.db.models.fields.related import ForeignKey;import publican_api.utils as api_utils", number = 10000)

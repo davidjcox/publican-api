@@ -1,0 +1,54 @@
+
+### NOTES ###
+
+Currently, get_queryset() and get_serializer() methods in views.py are vulnerable
+ to bad input (unhandled exceptions) but sanitizing data in them is a major hassle 
+ (and is not DRY).  Maybe input should be handled in urls.py where it makes more 
+ sense...
+ 
+ Possible solution:
+    regex of explicit set is pre-built and passed to url() as a variable
+    
+ Example:
+
+def get_drink_regex():
+    _drinks = []
+    for _model in dir(api_models):
+      try:
+        if issubclass(getattr(api_models, _model), api_basemodels.Drink):
+          _drinks.append(_model.lower())
+      except:
+        pass
+    return "r'^(/(?P<drink_id>" + "|".join(_drinks) + ")/$'"
+
+
+def get_entity_regex(entity_superclass=None):
+    _entities = []
+    for _entity in dir(api_models):
+        try:
+            _model = getattr(api_models, _entity)
+            if issubclass(_model, entity_superclass):
+                _entities.append(_model._meta.verbose_name_plural.lower())
+        except:
+            pass
+    _model_name = entity_superclass.__name__.lower()
+    return "r'^(/(?P<" + _model_name + ">(" + "|".join(_entities) + ")/$'"
+
+
+
+drink_regex = get_drink_regex()
+urlpatterns += format_suffix_patterns(patterns('', 
+    url(...), 
+    url(drink_regex, include(drinks_patterns)), 
+    url(...),
+)
+
+...OR, maybe even better...
+
+urlpatterns += format_suffix_patterns(patterns('', 
+    url(...), 
+    url(get_drink_regex(), include(drinks_patterns)), 
+    url(...),
+)
+
+

@@ -1,0 +1,50 @@
+
+GET     (list, retrieve)
+POST    (create)
+PUT     (partial)
+PATCH   (update)
+DELETE  (delete)
+
+
+/users/
+    GET
+/users/favorites/                           (list favorites for all entities for all users)
+    GET
+/users/favorites/entity/                    (list favorites for entity for all users)
+/users/n/
+
+    GET
+    POST        (permissions?)
+        create:
+            username    (mutable)
+            email       (mutable)
+            password    (mutable)
+            uuid        (immutable, system-generated)
+    PUT         (any action must include UUID)
+        update:
+            username
+            email       (must confirm new address before changing)
+            cellphone   (optional)
+            password
+    PATCH
+    DELETE      (must confirm by email, [1] below)
+/users/n/favorites/                         (list favorites for all resources for user)
+/users/n/favorites/resource/                  (list favorites for resource for user
+/users/n/favorites/resource/n/                (return whether resource is favorite for user)
+
+/resource/
+/reviews/
+/resources/reviews/                            (list all reviews for resource)
+/resources/reviews/n/                          (return whether user has reviewed any of resource)
+/resources/n/
+/reviews/n/
+/resources/n/reviews/                          (list all reviews for resource)
+/resources/n/reviews/n/                        (return whether user has reviewed resource)
+
+
+
+
+    [1] cascade DELETE considerations, see:
+        https://docs.djangoproject.com/en/1.7/topics/db/queries/#deleting-objects
+    
+    
